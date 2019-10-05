@@ -131,11 +131,11 @@
             <version>2.0.0</version>
         </dependency>-->
         <!-- cdi -->
-        <dependency>
+<!--        <dependency>
             <groupId>org.jboss.weld.se</groupId>
             <artifactId>weld-se-core</artifactId>
             <version>${weld.version}</version>
-        </dependency>
+        </dependency>-->
         <!-- https://mvnrepository.com/artifact/javax.servlet/servlet-api -->
         <dependency>
             <groupId>javax.servlet</groupId>

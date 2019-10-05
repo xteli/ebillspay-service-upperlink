@@ -98,6 +98,31 @@ public class NIPService {
         return request;
     }
 
+    protected FTDebitRequest convertToFTDebit(Transaction deb, String neRef) {
+        FTDebitRequest request = new FTDebitRequest();
+        if (deb != null) {
+            request.setBeneficiaryAccountName(deb.getBeneficiaryAccountName());
+            request.setBeneficiaryAccountNumber(deb.getBeneficiaryAccountNumber());
+            request.setBeneficiaryBankVerificationNumber(toValue(deb.getBeneficiaryBvn()));
+            request.setBeneficiaryKYCLevel(deb.getBeneficiaryKyc());
+            request.setDestinationInstitutionCode(deb.getSrcBankCode());
+            request.setNameEnquiryRef(neRef);
+            request.setDebitAccountName(deb.getSrcAccountName());
+            request.setDebitAccountNumber(deb.getSrcAccountNumber());
+            request.setDebitBankVerificationNumber(toValue(deb.getSrcBvn()));
+            request.setDebitKYCLevel(deb.getSrcKyc());
+            request.setMandateReferenceNumber(deb.getMandateRef());
+            request.setTransactionFee(BigDecimal.ZERO);
+            request.setAmount(deb.getDebitAmount());
+            request.setChannelCode(channelCode);
+            request.setNarration(toValue(deb.getNarration()));
+            request.setPaymentReference(deb.getPaymentRef());
+            request.setSessionID(deb.getSessionID());
+            request.setTransactionLocation("Upperlink HQ");
+        }
+        return request;
+    }
+
     protected FTCreditRequest convertToFTCredit(Transaction creditTransaction, boolean isFee) {
         FTCreditRequest creditRequest = new FTCreditRequest();
         if (creditTransaction != null) {
@@ -115,6 +140,30 @@ public class NIPService {
             creditRequest.setAmount(isFee ? creditTransaction.getFeeAmount() : creditTransaction.getCreditAmount());
             creditRequest.setChannelCode(channelCode);
             creditRequest.setSessionID(creditTransaction.getSessionID());
+            creditRequest.setTransactionLocation("Upperlink HQ");
+        }
+        return creditRequest;
+    }
+
+    protected FTCreditRequest convertToFTCredit(Transaction creditTransaction, boolean isFee, String neRef) {
+        FTCreditRequest creditRequest = new FTCreditRequest();
+        if (creditTransaction != null) {
+            creditRequest.setBeneficiaryAccountName(isFee ? creditTransaction.getFeeBeneficiaryAccountName() : creditTransaction.getBeneficiaryAccountName());
+            creditRequest.setBeneficiaryAccountNumber(isFee ? creditTransaction.getFeeBeneficiaryAccountNumber() : creditTransaction.getBeneficiaryAccountNumber());
+            creditRequest.setBeneficiaryKYCLevel(isFee ? creditTransaction.getFeeBeneficiaryKyc() : creditTransaction.getBeneficiaryKyc());
+            creditRequest.setBeneficiaryBankVerificationNumber(isFee ? toValue(creditTransaction.getFeeBeneficiaryBvn()) : toValue(creditTransaction.getBeneficiaryBvn()));
+            creditRequest.setDestinationInstitutionCode(isFee ? creditTransaction.getFeeBeneficiaryBankCode() : creditTransaction.getBeneficiaryBankCode());
+            creditRequest.setOriginatorAccountName(creditTransaction.getSrcAccountName());
+            creditRequest.setOriginatorAccountNumber(creditTransaction.getSrcAccountNumber());
+            creditRequest.setOriginatorKYCLevel(creditTransaction.getSrcKyc());
+            creditRequest.setOriginatorBankVerificationNumber(toValue(creditTransaction.getSrcBvn()));
+            creditRequest.setNarration(toValue(creditTransaction.getNarration()));
+            creditRequest.setPaymentReference(creditTransaction.getPaymentRef());
+            creditRequest.setAmount(isFee ? creditTransaction.getFeeAmount() : creditTransaction.getCreditAmount());
+            creditRequest.setChannelCode(channelCode);
+            creditRequest.setSessionID(creditTransaction.getSessionID());
+            creditRequest.setTransactionLocation("Upperlink HQ");
+            creditRequest.setNameEnquiryRef(neRef);
         }
         return creditRequest;
     }
@@ -149,6 +198,19 @@ public class NIPService {
         return ResponseCode.REQUEST_IN_PROGRESS;
     }
 
+    public String doNipDebit(Transaction debitTrans, String neRef) {
+        if (nipUrl == null || debitTrans == null) {
+            return null;
+        }
+        try {
+            FTDebitResponse debitResponse = new PaymentUtil(nipUrl).doNIPDebit(convertToFTDebit(debitTrans, neRef));
+            return debitResponse != null ? debitResponse.getResponseCode() : ResponseCode.REQUEST_IN_PROGRESS;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return ResponseCode.REQUEST_IN_PROGRESS;
+    }
+
     public String doNipCredit(Transaction creditTrans, boolean isFee) {
 
         if (nipUrl == null || creditTrans == null) {
@@ -156,6 +218,20 @@ public class NIPService {
         }
         try {
             FTCreditResponse response = new PaymentUtil(nipUrl).doNIPCredit(convertToFTCredit(creditTrans, isFee));
+            return response != null ? response.getResponseCode() : ResponseCode.REQUEST_IN_PROGRESS;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return ResponseCode.REQUEST_IN_PROGRESS;
+    }
+
+    public String doNipCredit(Transaction creditTrans, boolean isFee, String neRef) {
+
+        if (nipUrl == null || creditTrans == null) {
+            return null;
+        }
+        try {
+            FTCreditResponse response = new PaymentUtil(nipUrl).doNIPCredit(convertToFTCredit(creditTrans, isFee, neRef));
             return response != null ? response.getResponseCode() : ResponseCode.REQUEST_IN_PROGRESS;
         } catch (Exception ex) {
             ex.printStackTrace();
