@@ -275,7 +275,7 @@ public class UtilityService {
                                 //  debitTrans.setSrcBankCode(srcInst.getInstitutionCode());
                                 transaction.setSrcBankCode(source.getDestinationInstitutionCode());
                                 System.out.println("About debiting source account " + transaction.getSrcAccountNumber() + " with amount " + utilityRequest.getDebitAmount());
-                                String debitResponse = nipFTService.doNipDebit(transaction);
+                                String debitResponse = nipFTService.doNipDebit(transaction, source.getSessionID());
                                 transaction.setDebitResponseCode(debitResponse);
                                 transaction.setResponseTime(new Date());
                                 transaction.setSrcBankCode(utilityRequest.getSrcBankCode());
@@ -290,7 +290,7 @@ public class UtilityService {
                                         if (creditSaved) {
                                             transaction.setBeneficiaryBankCode(beneficiary.getDestinationInstitutionCode());
                                             System.out.println("About crediting beneficiary account " + transaction.getBeneficiaryAccountNumber() + " with amount " + utilityRequest.getCreditAmount());
-                                            String creditResponse = nipFTService.doNipCredit(transaction, false);
+                                            String creditResponse = nipFTService.doNipCredit(transaction, false, beneficiary.getSessionID());
                                             transaction.setCreditResponseCode(creditResponse);
                                             transaction.setResponseTime(new Date());
                                             transaction.setBeneficiaryBankCode(utilityRequest.getBeneficiaryBankCode());
@@ -315,7 +315,7 @@ public class UtilityService {
                                                             feeSaved = utilitySystem.updateEntity(transaction);
                                                             if (feeSaved) {
                                                                 transaction.setBeneficiaryBankCode(feeAcct.getDestinationInstitutionCode());
-                                                                feeResponse = nipFTService.doNipCredit(transaction, true);
+                                                                feeResponse = nipFTService.doNipCredit(transaction, true, feeAcct.getSessionID());
                                                                 transaction.setFeeResponseCode(feeResponse);
                                                                 transaction.setFeeBeneficiaryBankCode(utilityRequest.getFeeBeneficiaryBankCode());
                                                                 feeUpdated = utilitySystem.updateEntity(transaction);
